@@ -2,16 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    
+    <!-- PWA / FULL SCREEN META TAGS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    
     <title>Horseshoe Mania</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f0f7ff; font-family: -apple-system, sans-serif; }
+        body { background-color: #f0f7ff; font-family: -apple-system, sans-serif; padding-top: env(safe-area-inset-top); }
         .card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(30, 58, 138, 0.08); }
         .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
-        input[type="number"] { -moz-appearance: textfield; border-bottom: 2px solid #e2e8f0; }
+        input[type="number"] { -moz-appearance: textfield; border-bottom: 2px solid #e2e8f0; border-radius: 0; }
         input:focus { border-color: #3b82f6; outline: none; }
-        /* Professional Modal Overlay */
         .modal-overlay { 
             background: rgba(15, 23, 42, 0.7); 
             backdrop-filter: blur(8px); 
@@ -23,13 +29,15 @@
             justify-content: center; 
             padding: 1rem;
         }
+        /* Fix for Notch Phones */
+        #navbar { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <body class="pb-24">
 
     <!-- HEADER -->
     <div class="blue-gradient text-white p-8 shadow-xl mb-6 text-center rounded-b-[40px] relative overflow-hidden">
-        <div class="absolute -right-4 -top-4 opacity-10 rotate-12 scale-150 text-white">
+        <div class="absolute -right-4 -top-4 opacity-10 rotate-12 scale-150 text-white pointer-events-none">
             <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M7,2C4.24,2 2,4.24 2,7V14C2,17.87 5.13,21 9,21H15C18.87,21 22,17.87 22,14V7C22,4.24 19.76,2 17,2H15V4H17C18.66,4 20,5.34 20,7V14C20,16.76 17.76,19 15,19H9C6.24,19 4,16.76 4,14V7C4,5.34 5.34,4 7,4H9V2H7M9,6V8H15V6H9Z"/></svg>
         </div>
         <div class="flex items-center justify-center gap-3 mb-1">
@@ -42,31 +50,31 @@
 
     <!-- CUSTOM SCORING MODAL -->
     <div id="scoreModal" class="modal-overlay">
-        <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl transition-all transform scale-100">
+        <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl transition-all">
             <div class="blue-gradient p-8 text-white text-center">
                 <h3 class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">Enter Scores</h3>
                 <p id="modalRoundInfo" class="text-2xl font-black italic">Round 1</p>
             </div>
             <div class="p-8 space-y-8">
                 <div>
-                    <label id="labelT1" class="text-[10px] font-black text-blue-800 uppercase tracking-widest block mb-3 text-center">Team A</label>
-                    <input type="number" id="inputS1" inputmode="numeric" pattern="[0-9]*" placeholder="0" class="w-full text-5xl font-black text-blue-600 p-4 text-center bg-slate-50 rounded-2xl border-none outline-none focus:ring-4 ring-blue-100">
+                    <label id="labelT1" class="text-[10px] font-black text-blue-800 uppercase tracking-widest block mb-3 text-center truncate">Team A</label>
+                    <input type="number" id="inputS1" inputmode="numeric" pattern="[0-9]*" placeholder="0" class="w-full text-5xl font-black text-blue-600 p-4 text-center bg-slate-50 rounded-2xl border-none outline-none">
                 </div>
                 
                 <div class="flex items-center justify-center">
                     <span class="h-[1px] bg-slate-100 flex-grow"></span>
-                    <span class="px-4 text-slate-300 font-black italic text-xs">VS</span>
+                    <span class="px-4 text-slate-300 font-black italic text-xs uppercase tracking-tighter">Versus</span>
                     <span class="h-[1px] bg-slate-100 flex-grow"></span>
                 </div>
 
                 <div>
-                    <label id="labelT2" class="text-[10px] font-black text-blue-800 uppercase tracking-widest block mb-3 text-center">Team B</label>
-                    <input type="number" id="inputS2" inputmode="numeric" pattern="[0-9]*" placeholder="0" class="w-full text-5xl font-black text-blue-600 p-4 text-center bg-slate-50 rounded-2xl border-none outline-none focus:ring-4 ring-blue-100">
+                    <label id="labelT2" class="text-[10px] font-black text-blue-800 uppercase tracking-widest block mb-3 text-center truncate">Team B</label>
+                    <input type="number" id="inputS2" inputmode="numeric" pattern="[0-9]*" placeholder="0" class="w-full text-5xl font-black text-blue-600 p-4 text-center bg-slate-50 rounded-2xl border-none outline-none">
                 </div>
 
                 <div class="flex gap-4 pt-4">
                     <button onclick="closeScoring()" class="flex-1 py-4 text-slate-400 font-black uppercase text-[10px] tracking-widest">Cancel</button>
-                    <button onclick="saveScoring()" class="flex-[2] blue-gradient text-white py-5 rounded-[20px] font-black shadow-xl shadow-blue-200 uppercase tracking-widest text-sm active:scale-95 transition-transform">Save Score</button>
+                    <button onclick="saveScoring()" class="flex-[2] blue-gradient text-white py-5 rounded-[20px] font-black shadow-xl uppercase tracking-widest text-sm active:scale-95 transition-transform">Save Score</button>
                 </div>
             </div>
         </div>
@@ -104,7 +112,17 @@
             }
         }
 
-        function clearStorage() { if (confirm('Wipe all data?')) { localStorage.removeItem('horseshoeManiaData'); location.reload(); } }
+        function clearStorage() { if (confirm('Wipe all data and restart?')) { localStorage.removeItem('horseshoeManiaData'); location.reload(); } }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
 
         function init() { loadFromStorage(); if (tournamentStarted) { document.getElementById('navbar').classList.remove('hidden'); renderMatches(); } else { renderSetup(); } }
 
@@ -112,10 +130,21 @@
             const playerRows = players.map((p, i) => `<div class="flex justify-between items-center py-3 border-b border-slate-50"><span class="${p.paid ? 'font-bold text-blue-900' : 'text-slate-300 italic'} text-sm">${p.name}</span><div class="flex gap-3"><button onclick="togglePaid(${i})" class="text-[10px] px-4 py-1.5 rounded-full font-black transition ${p.paid ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}">${p.paid ? 'PAID' : 'UNPAID'}</button><button onclick="removePlayer(${i})" class="text-slate-200 hover:text-red-400 px-1 font-bold">✕</button></div></div>`).join('');
             document.getElementById('app').innerHTML = `
                 <div class="space-y-6">
-                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest">Settings</h2><div class="grid grid-cols-2 gap-6 mb-6"><div><label class="text-[10px] font-bold text-slate-400 uppercase">Rounds</label><input type="number" inputmode="numeric" onchange="updateConfig('rounds', parseInt(this.value))" value="${config.rounds}" class="w-full p-2 font-bold"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Courts</label><input type="number" inputmode="numeric" onchange="updateConfig('courts', parseInt(this.value))" value="${config.courts}" class="w-full p-2 font-bold"></div></div><label class="text-[10px] font-bold text-slate-400 uppercase block mb-3">Score System</label><div class="flex gap-2">${[15, 21, 25].map(t => { const m = t === 15 ? 20 : (t === 21 ? 26 : 30); return `<button onclick="setScore(${t},${m})" class="flex-1 py-3 text-xs font-black rounded-xl border-2 transition ${config.target==t ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-100 text-slate-400'}">${t}/${m}</button>`; }).join('')}</div></div>
-                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest">Financials</h2><div class="grid grid-cols-3 gap-4"><div><label class="text-[10px] font-bold text-slate-400 uppercase">Entry $</label><input type="number" onchange="updateConfig('entryFee', this.value)" value="${config.entryFee}" class="w-full p-2 font-black"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Payout %</label><input type="number" onchange="updateConfig('payoutPercent', this.value)" value="${config.payoutPercent}" class="w-full p-2 font-black"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Prizes</label><input type="number" onchange="updateConfig('payouts', this.value)" value="${config.payouts}" class="w-full p-2 font-black"></div></div></div>
-                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest border-b border-slate-100 pb-2">Players (${players.length})</h2><div class="flex gap-3 mb-4"><input type="text" id="pName" placeholder="Name..." class="flex-grow bg-slate-50 p-4 rounded-2xl outline-none font-bold"><button onclick="addPlayer()" class="blue-gradient text-white px-8 rounded-2xl font-black text-2xl">+</button></div><div class="max-h-60 overflow-y-auto">${playerRows || '<p class="text-center text-slate-300 py-6 italic text-sm">Add players</p>'}</div></div>
-                    <button onclick="startTournament()" class="w-full blue-gradient text-white py-6 rounded-[24px] font-black text-xl shadow-2xl mb-10">${tournamentStarted ? 'RESUME' : 'LAUNCH MANIA'}</button>
+                    <div class="card p-6">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-50 pb-2">
+                            <h2 class="text-xs font-black text-blue-800 uppercase tracking-widest">Display</h2>
+                            <button onclick="toggleFullscreen()" class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded font-bold uppercase tracking-tighter">Toggle Full Screen</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase">Rounds</label><input type="number" inputmode="numeric" onchange="updateConfig('rounds', parseInt(this.value))" value="${config.rounds}" class="w-full p-2 font-bold outline-none"></div>
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase">Courts</label><input type="number" inputmode="numeric" onchange="updateConfig('courts', parseInt(this.value))" value="${config.courts}" class="w-full p-2 font-bold outline-none"></div>
+                        </div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-3">Score System</label>
+                        <div class="flex gap-2">${[15, 21, 25].map(t => { const m = t === 15 ? 20 : (t === 21 ? 26 : 30); return `<button onclick="setScore(${t},${m})" class="flex-1 py-3 text-xs font-black rounded-xl border-2 transition ${config.target==t ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-100 text-slate-400'}">${t}/${m}</button>`; }).join('')}</div>
+                    </div>
+                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest">Financials</h2><div class="grid grid-cols-3 gap-4"><div><label class="text-[10px] font-bold text-slate-400 uppercase">Entry $</label><input type="number" inputmode="numeric" onchange="updateConfig('entryFee', this.value)" value="${config.entryFee}" class="w-full p-2 font-bold outline-none"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Payout %</label><input type="number" inputmode="numeric" onchange="updateConfig('payoutPercent', this.value)" value="${config.payoutPercent}" class="w-full p-2 font-bold outline-none"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Prizes</label><input type="number" inputmode="numeric" onchange="updateConfig('payouts', this.value)" value="${config.payouts}" class="w-full p-2 font-bold outline-none"></div></div></div>
+                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest border-b border-slate-100 pb-2">Players (${players.length})</h2><div class="flex gap-3 mb-4"><input type="text" id="pName" placeholder="Name..." class="flex-grow bg-slate-50 p-4 rounded-2xl outline-none font-bold"><button onclick="addPlayer()" class="blue-gradient text-white px-8 rounded-2xl font-black text-2xl shadow-lg">+</button></div><div class="max-h-60 overflow-y-auto">${playerRows || '<p class="text-center text-slate-300 py-6 italic text-sm">Add players</p>'}</div></div>
+                    <button onclick="startTournament()" class="w-full blue-gradient text-white py-6 rounded-[24px] font-black text-xl shadow-2xl mb-10 transform active:scale-95 transition tracking-widest uppercase">${tournamentStarted ? 'Resume Tournament' : 'Launch Tournament'}</button>
                     ${tournamentStarted ? `<button onclick="clearStorage()" class="w-full py-4 text-slate-300 text-[10px] font-black uppercase tracking-widest">Reset Everything</button>` : ''}
                 </div>`;
         }
@@ -126,7 +155,7 @@
         function removePlayer(i) { players.splice(i, 1); saveToStorage(); renderSetup(); }
         function setScore(t, m) { config.target = t; config.max = m; saveToStorage(); renderSetup(); }
 
-        function startTournament() { if (players.filter(p => p.paid).length < 2) return alert("Need paid players!"); if (!tournamentStarted) { tournamentStarted = true; generateRound(1); } saveToStorage(); document.getElementById('navbar').classList.remove('hidden'); renderMatches(); }
+        function startTournament() { if (players.filter(p => p.paid).length < 2) return alert("Need more paid players!"); if (!tournamentStarted) { tournamentStarted = true; generateRound(1); } saveToStorage(); document.getElementById('navbar').classList.remove('hidden'); renderMatches(); }
 
         function generateRound(n) {
             const active = players.filter(p => p.paid).sort(() => Math.random() - 0.5);
@@ -156,23 +185,22 @@
                     </div>
                 </div>`).join('');
             document.getElementById('app').innerHTML = `
-                <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-3xl shadow-sm"><button onclick="changeRoundView(-1)" class="p-3 bg-blue-50 rounded-2xl">⬅️</button><div class="text-center"><p class="text-[9px] font-black text-blue-300 uppercase tracking-widest">Round</p><h2 class="text-3xl font-black text-blue-900">${currentViewRound}</h2></div><button onclick="changeRoundView(1)" class="p-3 bg-blue-50 rounded-2xl">➡️</button></div>
+                <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-3xl shadow-sm"><button onclick="changeRoundView(-1)" class="p-3 bg-blue-50 rounded-2xl">⬅️</button><div class="text-center"><p class="text-[9px] font-black text-blue-300 uppercase tracking-widest leading-none">Round</p><h2 class="text-3xl font-black text-blue-900">${currentViewRound}</h2></div><button onclick="changeRoundView(1)" class="p-3 bg-blue-50 rounded-2xl">➡️</button></div>
                 ${d.byePlayer ? `<div class="bg-blue-900 text-white p-4 rounded-2xl text-center text-xs font-bold mb-5 shadow-xl italic tracking-widest">ODD MAN: ${d.byePlayer.name}</div>` : ''}
                 ${cards}
-                ${(currentViewRound === roundHistory.length && d.matches.every(m => m.s1 !== null)) ? `<button onclick="nextRoundBtn()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black mt-4 shadow-xl">${currentViewRound >= config.rounds ? 'VIEW STANDINGS' : 'NEXT ROUND'}</button>` : ''}`;
+                ${(currentViewRound === roundHistory.length && d.matches.every(m => m.s1 !== null)) ? `<button onclick="nextRoundBtn()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black mt-4 shadow-xl uppercase tracking-widest font-black">${currentViewRound >= config.rounds ? 'Finish Tournament' : 'Start Next Round'}</button>` : ''}`;
         }
 
         function openScoring(idx) {
             activeMatchIdx = idx;
             const m = roundHistory[currentViewRound - 1].matches[idx];
-            // THIS FIXES THE TEAM NAMES
             document.getElementById('labelT1').innerText = m.t1.map(p => p.name).join(' & ');
             document.getElementById('labelT2').innerText = m.t2.map(p => p.name).join(' & ');
             document.getElementById('inputS1').value = m.s1 ?? "";
             document.getElementById('inputS2').value = m.s2 ?? "";
             document.getElementById('modalRoundInfo').innerText = `Round ${currentViewRound} - Court ${m.court}`;
             document.getElementById('scoreModal').style.display = 'flex';
-            setTimeout(() => document.getElementById('inputS1').focus(), 150);
+            setTimeout(() => document.getElementById('inputS1').focus(), 200);
         }
 
         function closeScoring() { document.getElementById('scoreModal').style.display = 'none'; activeMatchIdx = null; }
@@ -204,13 +232,13 @@
             const pot = s.length * config.entryFee, prize = pot * (config.payoutPercent / 100), w = [0.55, 0.28, 0.12, 0.05, 0.02]; let dist = 0, pRows = [], n = Math.min(config.payouts, s.length);
             for(let i=0; i < n; i++) {
                 let r = prize * (w[i] / w.slice(0, n).reduce((a, b) => a + b, 0)), f = r > 100 ? 10 : 5, v = Math.floor(r / f) * f; dist += v;
-                pRows.push(`<div class="flex justify-between py-1"><span class="text-blue-200 text-xs">${i+1} - ${s[i].name}</span><span class="font-black text-green-400">$${v}</span></div>`);
+                pRows.push(`<div class="flex justify-between py-1 font-bold"><span class="text-blue-200 text-xs">${i+1} - ${s[i].name}</span><span class="font-black text-green-400">$${v}</span></div>`);
             }
-            const lRows = s.map((p, i) => `<tr class="border-b border-slate-50"><td class="p-4 text-[10px] font-black text-slate-300">${i+1}</td><td class="p-4 text-sm font-black text-blue-900">${p.name}</td><td class="p-4 text-blue-600 font-black text-right text-lg">${p.total}</td><td class="p-4 text-[10px] text-slate-300 text-right">${p.rds} rds</td></tr>`).join('');
+            const lRows = s.map((p, i) => `<tr class="border-b border-slate-50"><td class="p-4 text-[10px] font-black text-slate-300">${i+1}</td><td class="p-4 text-sm font-black text-blue-900">${p.name}</td><td class="p-4 text-blue-600 font-black text-right text-lg">${p.total}</td><td class="p-4 text-[10px] text-slate-300 text-right uppercase">${p.rds} rds</td></tr>`).join('');
             document.getElementById('app').innerHTML = `
-                <div class="card p-8 mb-6 bg-blue-900 text-white relative overflow-hidden"><h2 class="text-xs uppercase font-black text-blue-400 mb-6 tracking-widest border-b border-blue-800 pb-2">Financials</h2><div class="grid grid-cols-2 gap-8 mb-6"><div><p class="text-[9px] text-blue-300 uppercase font-bold mb-1">Total Pot</p><p class="text-3xl font-black">$${pot}</p></div><div><p class="text-[9px] text-blue-300 uppercase font-bold mb-1">House</p><p class="text-3xl font-black text-green-400">$${pot - dist}</p></div></div><div class="space-y-2 border-t border-blue-800 pt-6"><p class="text-[9px] text-blue-400 uppercase mb-2">Payouts</p>${pRows.join('')}</div></div>
-                <div class="card overflow-hidden mb-10"><table class="w-full text-left"><thead class="bg-blue-50 text-[10px] uppercase text-blue-400"><tr><th class="p-4">#</th><th>Player</th><th class="text-right">Pts</th><th class="text-right">Activity</th></tr></thead><tbody>${lRows}</tbody></table></div>
-                <button onclick="clearStorage()" class="w-full py-8 text-slate-300 text-[10px] font-black uppercase tracking-[0.4em]">Reset Tournament</button>`;
+                <div class="card p-8 mb-6 bg-blue-900 text-white relative overflow-hidden shadow-2xl"><h2 class="text-xs uppercase font-black text-blue-400 mb-6 tracking-widest border-b border-blue-800 pb-2">Final Financials</h2><div class="grid grid-cols-2 gap-8 mb-6"><div><p class="text-[9px] text-blue-300 uppercase font-bold mb-1">Total Pot</p><p class="text-3xl font-black">$${pot}</p></div><div><p class="text-[9px] text-blue-300 uppercase font-bold mb-1">House</p><p class="text-3xl font-black text-green-400">$${pot - dist}</p></div></div><div class="space-y-2 border-t border-blue-800 pt-6"><p class="text-[9px] text-blue-400 uppercase mb-2 font-black tracking-widest">Payouts</p>${pRows.join('')}</div></div>
+                <div class="card overflow-hidden shadow-xl mb-10"><table class="w-full text-left"><thead class="bg-blue-50 text-[10px] uppercase text-blue-400 font-black"><tr><th class="p-4">#</th><th>Player</th><th class="text-right p-4">Pts</th><th class="text-right p-4">Activity</th></tr></thead><tbody>${lRows}</tbody></table></div>
+                <button onclick="clearStorage()" class="w-full py-8 text-slate-300 text-[10px] font-black uppercase tracking-[0.4em]">Clear & Reset Tournament</button>`;
         }
 
         init();
