@@ -244,4 +244,305 @@
         init();
     </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    
+    <!-- PWA / FULL SCREEN META TAGS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3a8a">
+    
+    <title>Horseshoe Mania</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f0f7ff; font-family: -apple-system, sans-serif; padding-top: env(safe-area-inset-top); }
+        .card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(30, 58, 138, 0.08); }
+        .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        input[type="number"] { -moz-appearance: textfield; border-bottom: 2px solid #e2e8f0; border-radius: 0; }
+        input:focus { border-color: #3b82f6; outline: none; }
+        
+        .modal-overlay { 
+            background: rgba(15, 23, 42, 0.7); 
+            backdrop-filter: blur(8px); 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            z-index: 100; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1.5rem;
+        }
+        
+        #navbar { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Modal Animation */
+        .modal-content {
+            animation: modalIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- HEADER -->
+    <div class="blue-gradient text-white p-8 shadow-xl mb-6 text-center rounded-b-[40px] relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 opacity-10 rotate-12 scale-150 text-white pointer-events-none">
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M7,2C4.24,2 2,4.24 2,7V14C2,17.87 5.13,21 9,21H15C18.87,21 22,17.87 22,14V7C22,4.24 19.76,2 17,2H15V4H17C18.66,4 20,5.34 20,7V14C20,16.76 17.76,19 15,19H9C6.24,19 4,16.76 4,14V7C4,5.34 5.34,4 7,4H9V2H7M9,6V8H15V6H9Z"/></svg>
+        </div>
+        <h1 class="text-3xl font-black italic tracking-tighter uppercase mb-1">Horseshoe Mania</h1>
+        <p class="text-[10px] opacity-70 uppercase tracking-[0.3em] font-bold">Tournament Director Pro</p>
+    </div>
+
+    <div id="app" class="max-w-xl mx-auto px-4"></div>
+
+    <!-- CUSTOM SCORING MODAL -->
+    <div id="scoreModal" class="modal-overlay">
+        <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl modal-content">
+            <div class="blue-gradient p-8 text-white text-center">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">Enter Scores</h3>
+                <p id="modalRoundInfo" class="text-2xl font-black italic">Round 1</p>
+            </div>
+            <div class="p-8 space-y-8">
+                <div>
+                    <label id="labelT1" class="text-[10px] font-black text-blue-800 uppercase tracking-widest block mb-3 text-center truncate">Team A</label>
+                    <input type="number" id="inputS1" inputmode="numeric" pattern="[0-9]*" placeholder="0" class="w-full text-5xl font-black text-blue-600 p-4 text-center bg-slate-50 rounded-2xl border-none outline-none">
+                </div>
+                <div class="flex items-center justify-center">
+                    <span class="h-[1px] bg-slate-100 flex-grow"></span>
+                    <span class="px-4 text-slate-300 font-black italic text-xs uppercase">VS</span>
+                    <span class="h-[1px] bg-slate-100 flex-grow"></span>
+                </div>
+                <div>
+                    <label id="labelT2" class="text-[10px] font-black text-blue-800 uppercase tracking-widest block mb-3 text-center truncate">Team B</label>
+                    <input type="number" id="inputS2" inputmode="numeric" pattern="[0-9]*" placeholder="0" class="w-full text-5xl font-black text-blue-600 p-4 text-center bg-slate-50 rounded-2xl border-none outline-none">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="closeScoring()" class="flex-1 py-4 text-slate-400 font-black uppercase text-[10px] tracking-widest">Cancel</button>
+                    <button onclick="saveScoring()" class="flex-[2] blue-gradient text-white py-5 rounded-[20px] font-black shadow-xl uppercase tracking-widest text-sm active:scale-95 transition-transform">Save Score</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM NOTIFICATION MODAL (REPLACES ALERT/CONFIRM) -->
+    <div id="notifyModal" class="modal-overlay">
+        <div class="bg-white w-full max-w-xs rounded-[32px] overflow-hidden shadow-2xl modal-content">
+            <div id="notifyHeader" class="blue-gradient p-6 text-white text-center">
+                <h3 id="notifyTitle" class="text-[10px] font-black uppercase tracking-widest opacity-80">Message</h3>
+            </div>
+            <div class="p-8 text-center">
+                <p id="notifyText" class="text-slate-600 font-bold text-sm italic mb-8"></p>
+                <div id="notifyActions" class="flex flex-col gap-2">
+                    <!-- Buttons Injected via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav id="navbar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-50 flex justify-around hidden shadow-[0_-10px_25px_rgba(0,0,0,0.05)] z-50">
+        <button onclick="renderSetup()" class="p-4 text-slate-400 flex flex-col items-center flex-1 text-[10px] font-bold uppercase tracking-widest">
+            <span class="text-xl mb-1">⚙️</span>Setup
+        </button>
+        <button onclick="renderMatches()" class="p-4 text-slate-400 flex flex-col items-center flex-1 text-[10px] font-bold uppercase tracking-widest border-x border-slate-50">
+            <span class="text-xl mb-1">🎯</span>Matches
+        </button>
+        <button onclick="renderStandings()" class="p-4 text-slate-400 flex flex-col items-center flex-1 text-[10px] font-bold uppercase tracking-widest">
+            <span class="text-xl mb-1">🏆</span>Standings
+        </button>
+    </nav>
+
+    <script>
+        let players = [];
+        let config = { rounds: 7, target: 21, max: 26, courts: 4, entryFee: 20, payoutPercent: 80, payouts: 3 };
+        let roundHistory = [];
+        let currentViewRound = 1;
+        let tournamentStarted = false;
+        let activeMatchIdx = null;
+
+        // --- CUSTOM NOTIFICATION SYSTEM ---
+        function appNotify(message, type = 'alert', onConfirm = null) {
+            const modal = document.getElementById('notifyModal');
+            const title = document.getElementById('notifyTitle');
+            const text = document.getElementById('notifyText');
+            const actions = document.getElementById('notifyActions');
+            
+            text.innerText = message;
+            title.innerText = type === 'confirm' ? 'Confirmation' : 'Attention';
+            actions.innerHTML = '';
+
+            if (type === 'confirm') {
+                const yesBtn = document.createElement('button');
+                yesBtn.className = "blue-gradient text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg";
+                yesBtn.innerText = "Confirm";
+                yesBtn.onclick = () => { modal.style.display = 'none'; if(onConfirm) onConfirm(); };
+                
+                const noBtn = document.createElement('button');
+                noBtn.className = "text-slate-400 py-2 font-bold uppercase text-[10px] tracking-widest";
+                noBtn.innerText = "Cancel";
+                noBtn.onclick = () => { modal.style.display = 'none'; };
+                
+                actions.appendChild(yesBtn);
+                actions.appendChild(noBtn);
+            } else {
+                const okBtn = document.createElement('button');
+                okBtn.className = "blue-gradient text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg";
+                okBtn.innerText = "OK";
+                okBtn.onclick = () => { modal.style.display = 'none'; };
+                actions.appendChild(okBtn);
+            }
+            modal.style.display = 'flex';
+        }
+
+        // --- DATA PERSISTENCE ---
+        function saveToStorage() { localStorage.setItem('horseshoeManiaData', JSON.stringify({ players, config, roundHistory, currentViewRound, tournamentStarted })); }
+        function loadFromStorage() {
+            const saved = localStorage.getItem('horseshoeManiaData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                players = data.players || []; config = data.config || config;
+                roundHistory = data.roundHistory || []; currentViewRound = data.currentViewRound || 1;
+                tournamentStarted = data.tournamentStarted || false;
+            }
+        }
+
+        function clearStorage() {
+            appNotify('Reset everything? This will wipe all players and scores.', 'confirm', () => {
+                localStorage.removeItem('horseshoeManiaData');
+                location.reload();
+            });
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
+
+        function init() { loadFromStorage(); if (tournamentStarted) { document.getElementById('navbar').classList.remove('hidden'); renderMatches(); } else { renderSetup(); } }
+
+        function renderSetup() {
+            const playerRows = players.map((p, i) => `<div class="flex justify-between items-center py-3 border-b border-slate-50"><span class="${p.paid ? 'font-bold text-blue-900' : 'text-slate-300 italic'} text-sm">${p.name}</span><div class="flex gap-3"><button onclick="togglePaid(${i})" class="text-[10px] px-4 py-1.5 rounded-full font-black transition ${p.paid ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'}">${p.paid ? 'PAID' : 'UNPAID'}</button><button onclick="removePlayer(${i})" class="text-slate-200 hover:text-red-400 px-1 font-bold">✕</button></div></div>`).join('');
+            document.getElementById('app').innerHTML = `
+                <div class="space-y-6">
+                    <div class="card p-6">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-50 pb-2">
+                            <h2 class="text-xs font-black text-blue-800 uppercase tracking-widest">Display</h2>
+                            <button onclick="toggleFullscreen()" class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded font-bold uppercase tracking-tighter">Full Screen</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rounds</label><input type="number" inputmode="numeric" onchange="updateConfig('rounds', parseInt(this.value))" value="${config.rounds}" class="w-full p-2 font-bold outline-none"></div>
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Courts</label><input type="number" inputmode="numeric" onchange="updateConfig('courts', parseInt(this.value))" value="${config.courts}" class="w-full p-2 font-bold outline-none"></div>
+                        </div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-3 tracking-widest text-center">Point System</label>
+                        <div class="flex gap-2">${[15, 21, 25].map(t => { const m = t === 15 ? 20 : (t === 21 ? 26 : 30); return `<button onclick="setScore(${t},${m})" class="flex-1 py-4 text-xs font-black rounded-xl border-2 transition ${config.target==t ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-100 text-slate-400'}">${t}/${m}</button>`; }).join('')}</div>
+                    </div>
+                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest flex justify-between items-center"><span>Financials</span><span class="text-slate-200">💰</span></h2><div class="grid grid-cols-3 gap-4"><div><label class="text-[10px] font-bold text-slate-400 uppercase">Entry $</label><input type="number" inputmode="numeric" onchange="updateConfig('entryFee', this.value)" value="${config.entryFee}" class="w-full p-2 font-bold outline-none"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Payout %</label><input type="number" inputmode="numeric" onchange="updateConfig('payoutPercent', this.value)" value="${config.payoutPercent}" class="w-full p-2 font-bold outline-none"></div><div><label class="text-[10px] font-bold text-slate-400 uppercase">Prizes</label><input type="number" inputmode="numeric" onchange="updateConfig('payouts', this.value)" value="${config.payouts}" class="w-full p-2 font-bold outline-none"></div></div></div>
+                    <div class="card p-6"><h2 class="text-xs font-black text-blue-800 uppercase mb-4 tracking-widest border-b border-slate-100 pb-2">Players (${players.length})</h2><div class="flex gap-3 mb-4"><input type="text" id="pName" placeholder="Name..." class="flex-grow bg-slate-50 p-4 rounded-2xl outline-none font-bold"><button onclick="addPlayer()" class="blue-gradient text-white px-8 rounded-2xl font-black text-2xl shadow-lg">+</button></div><div class="max-h-60 overflow-y-auto">${playerRows || '<p class="text-center text-slate-300 py-6 italic text-sm">Add players to begin</p>'}</div></div>
+                    <button onclick="startTournament()" class="w-full blue-gradient text-white py-6 rounded-[24px] font-black text-xl shadow-2xl mb-10 transform active:scale-95 transition tracking-widest uppercase">${tournamentStarted ? 'Resume Tournament' : 'Launch Tournament'}</button>
+                    ${tournamentStarted ? `<button onclick="clearStorage()" class="w-full py-4 text-slate-300 text-[10px] font-black uppercase tracking-widest">Full System Reset</button>` : ''}
+                </div>`;
+        }
+
+        function updateConfig(k, v) { config[k] = v; saveToStorage(); }
+        function addPlayer() { const e = document.getElementById('pName'); if (e.value) { players.push({ name: e.value, paid: false }); e.value = ""; e.focus(); saveToStorage(); renderSetup(); } }
+        function togglePaid(i) { players[i].paid = !players[i].paid; saveToStorage(); renderSetup(); }
+        function removePlayer(i) { players.splice(i, 1); saveToStorage(); renderSetup(); }
+        function setScore(t, m) { config.target = t; config.max = m; saveToStorage(); renderSetup(); }
+
+        function startTournament() { if (players.filter(p => p.paid).length < 2) return appNotify("You need more paid players!"); if (!tournamentStarted) { tournamentStarted = true; generateRound(1); } saveToStorage(); document.getElementById('navbar').classList.remove('hidden'); renderMatches(); }
+
+        function generateRound(n) {
+            const active = players.filter(p => p.paid).sort(() => Math.random() - 0.5);
+            let pool = [...active], matches = [], bye = null;
+            if (pool.length % 2 !== 0) bye = pool.pop();
+            let pairs = []; for (let i = 0; i < pool.length; i += 2) pairs.push([pool[i], pool[i+1]]);
+            let idx = 0;
+            for (let c = 1; c <= config.courts; c++) {
+                if (idx < pairs.length) {
+                    let t1 = pairs[idx++], t2 = pairs[idx++];
+                    if (t1 && t2) matches.push({ court: c, t1, t2, s1: null, s2: null, type: 'Doubles' });
+                    else if (t1) matches.push({ court: c, t1: [t1[0]], t2: [t1[1]], s1: null, s2: null, type: 'Singles' });
+                }
+            }
+            roundHistory[n - 1] = { matches, byePlayer: bye }; currentViewRound = n; saveToStorage();
+        }
+
+        function renderMatches() {
+            const d = roundHistory[currentViewRound - 1]; if(!d) return;
+            const cards = d.matches.map((m, i) => `
+                <div class="card p-6 border-l-[10px] ${m.s1 !== null ? 'border-blue-500 bg-blue-50/20' : 'border-slate-200'} mb-5 active:scale-95 transition" onclick="openScoring(${i})">
+                    <div class="flex justify-between items-center mb-4 text-[10px] font-black text-blue-300 uppercase tracking-widest"><span>Court ${m.court}</span><span>${m.type} Match</span></div>
+                    <div class="flex justify-between items-center gap-2">
+                        <div class="w-5/12 text-sm font-black text-blue-900 leading-tight">${m.t1.map(p => p.name).join('<br>')}</div>
+                        <div class="w-2/12 text-center text-3xl font-black ${m.s1 !== null ? 'text-blue-600' : 'text-slate-200'}">${m.s1 !== null ? `${m.s1}-${m.s2}` : 'VS'}</div>
+                        <div class="w-5/12 text-right text-sm font-black text-blue-900 leading-tight">${m.t2.map(p => p.name).join('<br>')}</div>
+                    </div>
+                </div>`).join('');
+            document.getElementById('app').innerHTML = `
+                <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-3xl shadow-sm"><button onclick="changeRoundView(-1)" class="p-3 bg-blue-50 rounded-2xl text-xl">⬅️</button><div class="text-center"><p class="text-[9px] font-black text-blue-300 uppercase tracking-widest">Round</p><h2 class="text-3xl font-black text-blue-900">${currentViewRound}</h2></div><button onclick="changeRoundView(1)" class="p-3 bg-blue-50 rounded-2xl text-xl">➡️</button></div>
+                ${d.byePlayer ? `<div class="bg-blue-900 text-white p-4 rounded-2xl text-center text-xs font-bold mb-5 shadow-xl uppercase tracking-widest">Odd Man: ${d.byePlayer.name}</div>` : ''}
+                ${cards}
+                ${(currentViewRound === roundHistory.length && d.matches.every(m => m.s1 !== null)) ? `<button onclick="nextRoundBtn()" class="w-full bg-blue-600 text-white py-6 rounded-3xl font-black mt-4 shadow-xl uppercase tracking-widest text-lg">${currentViewRound >= config.rounds ? 'Finish Tournament' : 'Start Next Round'}</button>` : ''}`;
+        }
+
+        function openScoring(idx) {
+            activeMatchIdx = idx;
+            const m = roundHistory[currentViewRound - 1].matches[idx];
+            document.getElementById('labelT1').innerText = m.t1.map(p => p.name).join(' & ');
+            document.getElementById('labelT2').innerText = m.t2.map(p => p.name).join(' & ');
+            document.getElementById('inputS1').value = m.s1 ?? "";
+            document.getElementById('inputS2').value = m.s2 ?? "";
+            document.getElementById('modalRoundInfo').innerText = `Round ${currentViewRound} - Court ${m.court}`;
+            document.getElementById('scoreModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('inputS1').focus(), 150);
+        }
+
+        function closeScoring() { document.getElementById('scoreModal').style.display = 'none'; activeMatchIdx = null; }
+
+        function saveScoring() {
+            const s1 = document.getElementById('inputS1').value, s2 = document.getElementById('inputS2').value;
+            if (s1 !== "" && s2 !== "") {
+                const m = roundHistory[currentViewRound - 1].matches[activeMatchIdx];
+                m.s1 = Math.min(parseInt(s1), config.max); m.s2 = Math.min(parseInt(s2), config.max);
+                saveToStorage(); closeScoring(); renderMatches();
+            }
+        }
+
+        function changeRoundView(dir) { const r = currentViewRound + dir; if (r > 0 && r <= roundHistory.length) { currentViewRound = r; saveToStorage(); renderMatches(); } }
+
+        function nextRoundBtn() { if (roundHistory.length < config.rounds) { generateRound(roundHistory.length + 1); renderMatches(); } else { renderStandings(); } }
+
+        function renderStandings() {
+            let s = players.filter(p => p.paid).map(p => ({ ...p, total: 0, rds: 0 }));
+            roundHistory.forEach(r => {
+                let min = 999; r.matches.forEach(m => {
+                    if (m.s1 === null) return; if (m.s1 < min) min = m.s1; if (m.s2 < min) min = m.s2;
+                    m.t1.forEach(p => { let i = s.find(x => x.name === p.name); i.total += m.s1; i.rds++; });
+                    m.t2.forEach(p => { let i = s.find(x => x.name === p.name); i.total += m.s2; i.rds++; });
+                });
+                if (r.byePlayer) { let i = s.find(x => x.name === r.byePlayer.name); i.total += (min === 999 ? 0 : min); i.rds++; }
+            });
+            s.sort((a, b) => b.total - a.total);
+            const pot = s.length * config.entryFee, prize = pot * (config.payoutPercent / 100), w = [0.55, 0.28, 0.12, 0.05, 0.02]; let dist = 0, pRows = [], n = Math.min(config.payouts, s.length);
+            for(let i=0; i < n; i++) {
+                let r = prize * (w[i] / w.slice(0, n).reduce((a, b) => a + b, 0)), f = r > 100 ? 10 : 5, v = Math.floor(r / f) * f; dist += v;
+                pRows.push(`<div class="flex justify-between py-1 font-bold"><span class="text-blue-200 text-xs">${i+1} - ${s[i].name}</span><span class="font-black text-green-400">$${v}</span></div>`);
+            }
+            const lRows = s.map((p, i) => `<tr class="border-b border-slate-50"><td class="p-4 text-[10px] font-black text-slate-300">${i+1}</td><td class="p-4 text-sm font-black text-blue-900">${p.name}</td><td class="p-4 text-blue-600 font-black text-right text-lg">${p.total}</td><td class="p-4 text-[10px] text-slate-300 text-right uppercase font-bold">${p.rds} rds</td></tr>`).join('');
+            document.getElementById('app').innerHTML = `
+                <div class="card p-8 mb-6 bg-blue-900 text-white relative overflow-hidden shadow-2xl"><h2 class="text-xs uppercase font-black text-blue-400 mb-6 tracking-widest border-b border-blue-800 pb-2">Final Financials</h2><div class="grid grid-cols-2 gap-8 mb-6"><div><p class="text-[9px] text-blue-300 uppercase font-bold mb-1">Total Pot</p><p class="text-3xl font-black">$${pot}</p></div><div><p class="text-[9px] text-blue-300 uppercase font-bold mb-1">House</p><p class="text-3xl font-black text-green-400">$${pot - dist}</p></div></div><div class="space-y-2 border-t border-blue-800 pt-6"><p class="text-[9px] text-blue-400 uppercase mb-2 font-black tracking-widest">Payouts</p>${pRows.join('')}</div></div>
+                <div class="card overflow-hidden shadow-xl mb-10"><table class="w-full text-left"><thead class="bg-blue-50 text-[10px] uppercase text-blue-400 font-black"><tr><th class="p-4">#</th><th class="p-4">Player</th><th class="text-right p-4">Pts</th><th class="text-right p-4">Activity</th></tr></thead><tbody>${lRows}</tbody></table></div>
+                <button onclick="clearStorage()" class="w-full py-8 text-slate-300 text-[10px] font-black uppercase tracking-[0.4em]">Clear & Reset Tournament</button>`;
+        }
+
+        init();
+    </script>
+</body>
 </html>
